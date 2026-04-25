@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="TZ Sniper" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <title>TZ Sniper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--font-head:'Syne',sans-serif;--font-mono:'DM Mono',monospace;}
+
+    .theme-dark-neon{
+      --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c26;--border:#2a2a38;
+      --text:#f0f0f8;--muted:#6b6b80;--accent:#c8f135;--accent-text:#0a0a0f;
+      --accent2:#7b61ff;
+      --active-bg:rgba(200,241,53,0.08);--active-border:rgba(200,241,53,0.25);--active-text:#c8f135;
+      --upcoming-bg:rgba(123,97,255,0.08);--upcoming-text:#b8a8ff;--upcoming-border:rgba(123,97,255,0.3);
+      --ended-opacity:0.35;--tag-bg:#c8f135;--tag-text:#0a0a0f;
+      --src-bg:rgba(123,97,255,0.2);--src-text:#b8a8ff;--src-border:rgba(123,97,255,0.4);
+      --ref-bg:rgba(200,241,53,0.15);--ref-text:#c8f135;--ref-border:rgba(200,241,53,0.35);
+      --progress:#c8f135;--switcher-bg:#13131a;--switcher-border:#2a2a38;
+      --sim-bg:rgba(200,241,53,0.05);--sim-border:rgba(200,241,53,0.18);
+    }
+    .theme-light{
+      --bg:#f7f6f2;--surface:#ffffff;--surface2:#f0eeea;--border:#dddad4;
+      --text:#1a1a2e;--muted:#6d6d6d;--accent:#9259a3;--accent-text:#fff;
+      --accent2:#514aa8;
+      --active-bg:rgba(30,142,83,0.08);--active-border:rgba(30,142,83,0.3);--active-text:#1e8e53;
+      --upcoming-bg:rgba(81,74,168,0.07);--upcoming-text:#514aa8;--upcoming-border:rgba(81,74,168,0.25);
+      --ended-opacity:0.35;--tag-bg:#9259a3;--tag-text:#fff;
+      --src-bg:rgba(81,74,168,0.1);--src-text:#514aa8;--src-border:rgba(81,74,168,0.3);
+      --ref-bg:rgba(30,142,83,0.1);--ref-text:#1e8e53;--ref-border:rgba(30,142,83,0.3);
+      --progress:#1e8e53;--switcher-bg:#fff;--switcher-border:#dddad4;
+      --sim-bg:rgba(146,89,163,0.05);--sim-border:rgba(146,89,163,0.18);
+    }
+    .theme-dark-rich{
+      --bg:#1a1520;--surface:#231d2c;--surface2:#2e2639;--border:#3d3452;
+      --text:#ede8f5;--muted:#8a7fa0;--accent:#b87de8;--accent-text:#1a1520;
+      --accent2:#f0a04b;
+      --active-bg:rgba(184,125,232,0.1);--active-border:rgba(184,125,232,0.3);--active-text:#b87de8;
+      --upcoming-bg:rgba(240,160,75,0.08);--upcoming-text:#f0a04b;--upcoming-border:rgba(240,160,75,0.3);
+      --ended-opacity:0.35;--tag-bg:#b87de8;--tag-text:#1a1520;
+      --src-bg:rgba(240,160,75,0.15);--src-text:#f0a04b;--src-border:rgba(240,160,75,0.35);
+      --ref-bg:rgba(184,125,232,0.15);--ref-text:#b87de8;--ref-border:rgba(184,125,232,0.35);
+      --progress:#b87de8;--switcher-bg:#231d2c;--switcher-border:#3d3452;
+      --sim-bg:rgba(184,125,232,0.06);--sim-border:rgba(184,125,232,0.18);
+    }
+
+    html,body{height:100%;overflow:hidden}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-mono);font-size:13px;transition:background 0.25s,color 0.25s;display:flex;flex-direction:column}
+
+    /* Safe area for notch phones */
+    .wrap{
+      flex:1;display:flex;flex-direction:column;overflow:hidden;
+      padding: env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);
+    }
+
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px;flex-shrink:0;flex-wrap:wrap;gap:8px}
+    .header{display:flex;align-items:baseline;gap:10px}
+    .header h1{font-family:var(--font-head);font-size:17px;font-weight:700;letter-spacing:-0.02em;color:var(--text)}
+    .header .tag{font-size:9px;font-weight:600;background:var(--tag-bg);color:var(--tag-text);padding:2px 7px;border-radius:2px;letter-spacing:0.06em;text-transform:uppercase}
+    .theme-switcher{display:flex;gap:3px;background:var(--switcher-bg);border:1px solid var(--switcher-border);border-radius:4px;padding:2px}
+    .theme-btn{font-family:var(--font-mono);font-size:9px;padding:3px 8px;border:none;border-radius:2px;cursor:pointer;background:transparent;color:var(--muted);transition:all 0.15s;white-space:nowrap}
+    .theme-btn.active{background:var(--accent);color:var(--accent-text);font-weight:500}
+
+    /* Bottom tab bar */
+    .tab-bar{display:flex;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0px)}
+    .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;border:none;background:none;color:var(--muted);font-family:var(--font-mono);font-size:9px;cursor:pointer;gap:3px;transition:color 0.15s;letter-spacing:0.03em}
+    .tab-btn .tab-icon{font-size:18px;line-height:1}
+    .tab-btn.active{color:var(--accent)}
+    .tab-btn.active .tab-icon{filter:drop-shadow(0 0 4px var(--accent))}
+
+    .panels{flex:1;overflow:hidden;position:relative}
+    .panel{display:none;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 8px}
+    .panel.active{display:block}
+
+    /* Tables */
+    .tz-table,.out-table,.gmax-table{width:100%;border-collapse:collapse}
+    .tz-table th,.out-table th,.gmax-table th{font-size:9px;font-weight:500;color:var(--muted);text-align:left;padding:5px 12px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:0.07em;position:sticky;top:0;background:var(--bg);z-index:2}
+    .tz-table td,.out-table td,.gmax-table td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+    .tz-table tr:last-child td,.out-table tr:last-child td,.gmax-table tr:last-child td{border-bottom:none}
+    .flag{margin-right:5px;font-size:14px}
+    .city-name{font-family:var(--font-head);font-size:13px;font-weight:600;color:var(--text)}
+    .utc-small{font-size:10px;color:var(--muted);margin-top:1px}
+    .vel-link{display:inline-block;font-size:10px;color:var(--accent2);text-decoration:none;margin-top:2px;opacity:0.85}
+    .vel-link:hover{opacity:1}
+    .utc-pill{display:inline-block;font-size:10px;padding:2px 7px;border-radius:2px;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+    .live-time{font-size:14px;font-weight:500;color:var(--accent);font-variant-numeric:tabular-nums}
+    .live-date{font-size:10px;color:var(--muted);margin-top:1px}
+
+    /* Controls */
+    .controls-bar{padding:10px 12px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+    .controls-row{display:grid;gap:8px}
+    .controls-row.cols-3{grid-template-columns:1fr 1fr 1fr}
+    .controls-row.cols-2{grid-template-columns:1fr 1fr}
+    .field label{font-size:9px;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.07em}
+    select,input[type=time],input[type=date]{width:100%;height:32px;padding:0 8px;font-size:12px;font-family:var(--font-mono);border:1px solid var(--border);border-radius:3px;background:var(--surface2);color:var(--text);outline:none;-webkit-appearance:none}
+    select:focus,input:focus{border-color:var(--accent2)}
+    .presets{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+    .preset-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em}
+    .preset-btn{font-family:var(--font-mono);font-size:10px;padding:4px 10px;border:1px solid var(--border);border-radius:2px;background:var(--surface2);color:var(--muted);cursor:pointer;transition:all 0.12s}
+    .preset-btn.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+
+    .out-header{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;padding:8px 12px 4px;border-bottom:1px solid var(--border)}
+
+    .out-table tr.is-source td{background:var(--src-bg)}
+    .out-table tr.is-ref td{background:var(--ref-bg)}
+    .out-table tr.is-both td{background:var(--ref-bg)}
+    .converted-time{font-size:14px;font-weight:500;color:var(--accent);font-variant-numeric:tabular-nums}
+    .ref-converted{font-size:14px;font-weight:500;color:var(--accent2);font-variant-numeric:tabular-nums}
+    .both-converted{font-size:14px;font-weight:500;color:var(--accent);font-variant-numeric:tabular-nums}
+    .day-note{font-size:10px;color:var(--muted);margin-left:5px}
+    .src-badge{font-size:9px;background:var(--src-bg);color:var(--src-text);border:1px solid var(--src-border);padding:1px 5px;border-radius:2px;margin-left:4px}
+    .ref-badge{font-size:9px;background:var(--ref-bg);color:var(--ref-text);border:1px solid var(--ref-border);padding:1px 5px;border-radius:2px;margin-left:4px}
+
+    /* GMAX */
+    .sim-bar{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--sim-border);background:var(--sim-bg);flex-wrap:wrap;flex-shrink:0}
+    .sim-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em}
+    .sim-val{font-size:13px;font-weight:500;color:var(--accent);font-variant-numeric:tabular-nums}
+    .sim-date{font-size:10px;color:var(--muted)}
+
+    .gmax-table tr.row-active td{background:var(--active-bg);border-bottom-color:var(--active-border)}
+    .gmax-table tr.row-active .city-name{color:var(--active-text)}
+    .gmax-table tr.row-ended td{opacity:var(--ended-opacity)}
+    .gmax-table tr.row-upcoming td{background:var(--upcoming-bg)}
+    .time-block{font-size:12px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--text);line-height:1.5}
+    .time-date{font-size:10px;color:var(--muted);margin-top:1px}
+    .your-time-block{font-size:12px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--accent2);line-height:1.5}
+    .status-badge{display:inline-block;font-size:9px;font-weight:500;padding:2px 7px;border-radius:2px;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap}
+    .badge-active{background:var(--active-bg);color:var(--active-text);border:1px solid var(--active-border)}
+    .badge-ended{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+    .badge-upcoming{background:var(--upcoming-bg);color:var(--upcoming-text);border:1px solid var(--upcoming-border)}
+    .progress-wrap{width:50px;height:3px;background:var(--surface2);border-radius:2px;display:inline-block;vertical-align:middle;margin-left:5px}
+    .progress-bar{height:100%;border-radius:2px;background:var(--progress)}
+    .countdown{font-size:9px;color:var(--muted);margin-top:3px}
+
+    /* panel layout helpers */
+    .panel-with-controls{display:none;height:100%;flex-direction:column;overflow:hidden}
+    .panel-with-controls.active{display:flex}
+    .panel-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  </style>
+</head>
+<body class="theme-dark-neon">
+<div class="wrap">
+  <div class="topbar">
+    <div class="header">
+      <h1>TZ Sniper</h1>
+      <span class="tag">Sniping</span>
+    </div>
+    <div class="theme-switcher">
+      <button class="theme-btn active" onclick="setTheme('dark-neon',this)">Neon</button>
+      <button class="theme-btn" onclick="setTheme('light',this)">Light</button>
+      <button class="theme-btn" onclick="setTheme('dark-rich',this)">Rich</button>
+    </div>
+  </div>
+
+  <div class="panels">
+    <!-- HOTSPOTS -->
+    <div id="panel-list" class="panel active">
+      <table class="tz-table">
+        <thead><tr><th>City</th><th>UTC offset</th><th>Local time</th></tr></thead>
+        <tbody id="tz-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- LOOKUP -->
+    <div id="panel-lookup" class="panel-with-controls">
+      <div class="controls-bar">
+        <div class="controls-row cols-3">
+          <div class="field"><label>Source TZ</label><select id="src-tz" onchange="updateLookup()"></select></div>
+          <div class="field"><label>Time</label><input type="time" id="src-time" value="14:00" oninput="onTimeInput()" /></div>
+          <div class="field"><label>Ref TZ</label><select id="ref-tz" onchange="updateLookup()"></select></div>
+        </div>
+        <div class="presets">
+          <span class="preset-label">Quick:</span>
+          <button class="preset-btn" onclick="setPreset('14:00',this)">14:00</button>
+          <button class="preset-btn" onclick="setPreset('18:00',this)">18:00</button>
+        </div>
+      </div>
+      <div class="out-header" id="out-header">Converted times — all hotspots</div>
+      <div class="panel-scroll">
+        <table class="out-table">
+          <thead><tr><th>City</th><th>TZ</th><th>Converted</th><th>Velocity</th></tr></thead>
+          <tbody id="out-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- GMAX -->
+    <div id="panel-gmax" class="panel-with-controls">
+      <div class="controls-bar">
+        <div class="controls-row cols-3">
+          <div class="field"><label>Event date</label><input type="date" id="gmax-date" onchange="renderGmax()" /></div>
+          <div class="field"><label>Your TZ</label><select id="gmax-ref" onchange="renderGmax()"></select></div>
+          <div class="field"><label>Your time now</label><input type="time" id="gmax-now" value="14:00" oninput="renderGmax()" /></div>
+        </div>
+      </div>
+      <div class="sim-bar">
+        <span class="sim-label">Viewing as</span>
+        <span class="sim-val" id="gmax-sim-display">—</span>
+        <span class="sim-date" id="gmax-sim-date">—</span>
+      </div>
+      <div class="panel-scroll">
+        <table class="gmax-table">
+          <thead><tr>
+            <th>City</th><th>Local (14–17)</th><th>Your time</th><th>Status</th>
+          </tr></thead>
+          <tbody id="gmax-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom tab bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-list" onclick="switchTab('list')">
+      <span class="tab-icon">🌐</span>Hotspots
+    </button>
+    <button class="tab-btn" id="tab-lookup" onclick="switchTab('lookup')">
+      <span class="tab-icon">🔍</span>Lookup
+    </button>
+    <button class="tab-btn" id="tab-gmax" onclick="switchTab('gmax')">
+      <span class="tab-icon">⚡</span>GMAX
+    </button>
+  </div>
+</div>
+
+<script>
+const ZONES=[
+  {flag:"🇰🇮",city:"Kiritimati",    label:"LINT",iana:"Pacific/Kiritimati",    url:"https://pk.md/2.0169263,-157.48526"},
+  {flag:"🇳🇿",city:"Wellington",    label:"NZST",iana:"Pacific/Auckland",      url:"https://pk.md/-41.282965,174.766473"},
+  {flag:"🇦🇺",city:"Sydney",        label:"AEST",iana:"Australia/Sydney",      url:"https://pk.md/-33.86498,151.21075"},
+  {flag:"🇦🇺",city:"Melbourne",     label:"AEST",iana:"Australia/Melbourne",   url:"https://pk.md/-37.8176,144.958812"},
+  {flag:"🇦🇺",city:"Brisbane",      label:"AEST",iana:"Australia/Brisbane",    url:"https://pk.md/-27.470188,153.023664"},
+  {flag:"🇦🇺",city:"Adelaide",      label:"ACST",iana:"Australia/Adelaide",    url:"https://pk.md/-34.926748,138.600359"},
+  {flag:"🇯🇵",city:"Tokyo",         label:"JST", iana:"Asia/Tokyo",            url:"https://pk.md/35.6963,139.81440"},
+  {flag:"🇯🇵",city:"Kyoto",         label:"JST", iana:"Asia/Tokyo",            url:"https://pk.md/35.00472,135.77119"},
+  {flag:"🇯🇵",city:"Osaka",         label:"JST", iana:"Asia/Tokyo",            url:"https://pk.md/34.698088,135.50018"},
+  {flag:"🇰🇷",city:"Seoul",         label:"KST", iana:"Asia/Seoul",            url:"https://pk.md/37.56716,126.97787"},
+  {flag:"🇭🇰",city:"Hong Kong",     label:"HKT", iana:"Asia/Hong_Kong",        url:"https://pk.md/22.301199,114.170167"},
+  {flag:"🇹🇼",city:"Tainan",        label:"CST", iana:"Asia/Taipei",           url:"https://pk.md/25.039823,121.507339"},
+  {flag:"🇵🇭",city:"Manila",        label:"PHT", iana:"Asia/Manila",           url:"https://pk.md/14.594369,120.974617"},
+  {flag:"🇮🇩",city:"Bandung",       label:"WIB", iana:"Asia/Jakarta",          url:"https://pk.md/-8.7467172,115.166787"},
+  {flag:"🇸🇬",city:"Singapore",     label:"SGT", iana:"Asia/Singapore",        url:"https://pk.md/1.289856,103.845107"},
+  {flag:"🇻🇳",city:"Ho Chi Minh",   label:"ICT", iana:"Asia/Ho_Chi_Minh",      url:"https://pk.md/10.773657,106.692288"},
+  {flag:"🇧🇩",city:"Dhaka",         label:"BST", iana:"Asia/Dhaka",            url:"https://pk.md/23.724403,90.397809"},
+  {flag:"🇮🇳",city:"Mumbai",        label:"IST", iana:"Asia/Kolkata",          url:"https://pk.md/18.5187,73.8531"},
+  {flag:"🇲🇻",city:"Maldives",      label:"MVT", iana:"Indian/Maldives",       url:"https://pk.md/4.171946,73.50371"},
+  {flag:"🇦🇪",city:"Dubai",         label:"GST", iana:"Asia/Dubai",            url:"https://pk.md/25.072251,55.129011"},
+  {flag:"🇹🇷",city:"İzmir",         label:"TRT", iana:"Europe/Istanbul",       url:"https://pk.md/38.462970,27.217870"},
+  {flag:"🇬🇷",city:"Thessaloniki",  label:"EET", iana:"Europe/Athens",         url:"https://pk.md/40.625426,22.953643"},
+  {flag:"🇭🇺",city:"Budapest",      label:"CET", iana:"Europe/Budapest",       url:"https://pk.md/47.531057,19.051142"},
+  {flag:"🇫🇷",city:"Paris",         label:"CET", iana:"Europe/Paris",          url:"https://pk.md/48.864954,2.323832"},
+  {flag:"🇮🇹",city:"Rome",          label:"CET", iana:"Europe/Rome",           url:"https://pk.md/41.892925,12.48174"},
+  {flag:"🇪🇸",city:"Zaragoza",      label:"CET", iana:"Europe/Madrid",         url:"https://pk.md/41.661254,-0.892912"},
+  {flag:"🇬🇧",city:"London",        label:"GMT", iana:"Europe/London",         url:"https://pk.md/51.510077,-0.123853"},
+  {flag:"🇪🇸",city:"Santa Cruz",    label:"WET", iana:"Atlantic/Canary",       url:"https://pk.md/28.490291,-16.319225"},
+  {flag:"🇧🇷",city:"São Paulo",     label:"BRT", iana:"America/Sao_Paulo",     url:"https://pk.md/-23.586354,-46.6583"},
+  {flag:"🇧🇷",city:"São Luís",      label:"BRT", iana:"America/Fortaleza",     url:"https://pk.md/-2.557929,-44.307009"},
+  {flag:"🇧🇷",city:"Indaial",       label:"BRT", iana:"America/Sao_Paulo",     url:"https://pk.md/-26.892904,-49.230269"},
+  {flag:"🇺🇸",city:"New York",      label:"EST", iana:"America/New_York",      url:"https://pk.md/40.770418,-73.974637"},
+  {flag:"🇺🇸",city:"Disney World",  label:"EST", iana:"America/New_York",      url:"https://pk.md/28.415972,-81.580934"},
+  {flag:"🇺🇸",city:"Chicago",       label:"CST", iana:"America/Chicago",       url:"https://pk.md/41.880006,-87.623931"},
+  {flag:"🇺🇸",city:"Austin",        label:"CST", iana:"America/Chicago",       url:"https://pk.md/30.288607,-97.738525"},
+  {flag:"🇲🇽",city:"Mexico City",   label:"CST", iana:"America/Mexico_City",   url:"https://pk.md/19.433956,-99.139351"},
+  {flag:"🇺🇸",city:"Pier 39",       label:"PST", iana:"America/Los_Angeles",   url:"https://pk.md/37.808673,-122.409821"},
+  {flag:"🇺🇸",city:"San Francisco", label:"PST", iana:"America/Los_Angeles",   url:"https://pk.md/37.785047,-122.40171"},
+  {flag:"🇺🇸",city:"Disneyland CA", label:"PST", iana:"America/Los_Angeles",   url:"https://pk.md/33.811954,-117.919067"},
+  {flag:"🇺🇸",city:"Las Vegas",     label:"PST", iana:"America/Los_Angeles",   url:"https://pk.md/36.112068,-115.171898"},
+  {flag:"🇺🇸",city:"Honolulu",      label:"HST", iana:"Pacific/Honolulu",      url:"https://pk.md/21.298364,-157.860113"},
+];
+
+// Robust offset using Intl formatToParts — browser-safe
+function getOffsetMin(iana,dateStr){
+  const ds=dateStr||todayStr();
+  const [y,mo,d]=ds.split('-').map(Number);
+  const refUTC=Date.UTC(y,mo-1,d,12,0,0);
+  const parts=new Intl.DateTimeFormat('en-US',{
+    timeZone:iana,hour:'numeric',minute:'numeric',second:'numeric',
+    hour12:false,year:'numeric',month:'numeric',day:'numeric'
+  }).formatToParts(new Date(refUTC));
+  const g=t=>parseInt(parts.find(p=>p.type===t)?.value||'0');
+  const lH=g('hour')%24,lMin=g('minute'),lY=g('year'),lM=g('month')-1,lD=g('day');
+  return (Date.UTC(lY,lM,lD,lH,lMin,0)-refUTC)/60000;
+}
+function localToUTC(dateStr,timeStr,iana){
+  const [y,mo,d]=dateStr.split('-').map(Number);
+  const [hh,mm]=timeStr.split(':').map(Number);
+  return Date.UTC(y,mo-1,d,hh,mm,0)-getOffsetMin(iana,dateStr)*60000;
+}
+function fmtHHMM(ms,iana){
+  return new Intl.DateTimeFormat('en-GB',{timeZone:iana,hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(ms));
+}
+function fmtDateShort(ms,iana){
+  return new Intl.DateTimeFormat('en-US',{timeZone:iana,weekday:'short',day:'numeric',month:'short'}).format(new Date(ms));
+}
+function getUtcLabel(iana){
+  const p=new Intl.DateTimeFormat('en',{timeZone:iana,timeZoneName:'shortOffset'}).formatToParts(new Date());
+  return (p.find(x=>x.type==='timeZoneName')?.value||'').replace('GMT','UTC');
+}
+function fmtTimeLive(d,iana){
+  return new Intl.DateTimeFormat('en-GB',{timeZone:iana,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(d);
+}
+function fmtDateLive(d,iana){
+  return new Intl.DateTimeFormat('en-US',{timeZone:iana,weekday:'short',month:'short',day:'numeric'}).format(d);
+}
+function minToStr(raw){
+  const m=((raw%1440)+1440)%1440,h=Math.floor(m/60),mn=m%60;
+  return String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0');
+}
+function todayStr(){
+  return new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+}
+function setTheme(name,btn){
+  document.body.className='theme-'+name;
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function buildList(){
+  const tb=document.getElementById('tz-tbody');tb.innerHTML='';
+  ZONES.forEach(z=>{
+    const key=(z.iana+z.city).replace(/\W/g,'_');
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><span class="flag">${z.flag}</span><span class="city-name">${z.city}</span><br>
+      <a class="vel-link" href="${z.url}" target="_blank">↗ Velocity</a></td>
+      <td><span class="utc-pill">${getUtcLabel(z.iana)}</span></td>
+      <td><div class="live-time" id="lt-${key}"></div>
+      <div class="live-date" id="ld-${key}"></div></td>`;
+    tb.appendChild(tr);
+  });
+}
+function tick(){
+  const now=new Date();
+  ZONES.forEach(z=>{
+    const key=(z.iana+z.city).replace(/\W/g,'_');
+    const lt=document.getElementById('lt-'+key);
+    const ld=document.getElementById('ld-'+key);
+    if(lt) lt.textContent=fmtTimeLive(now,z.iana);
+    if(ld) ld.textContent=fmtDateLive(now,z.iana);
+  });
+}
+function buildSelects(){
+  ['src-tz','ref-tz'].forEach(id=>{
+    const sel=document.getElementById(id);sel.innerHTML='';
+    ZONES.forEach(z=>{
+      const o=document.createElement('option');
+      o.value=z.iana+'||'+z.city;
+      o.textContent=z.flag+' '+z.city+' ('+z.label+')';
+      if(z.city==='Mumbai') o.selected=true;
+      sel.appendChild(o);
+    });
+  });
+  const gs=document.getElementById('gmax-ref');gs.innerHTML='';
+  ZONES.forEach(z=>{
+    const o=document.createElement('option');
+    o.value=z.iana;
+    o.textContent=z.flag+' '+z.city+' ('+z.label+')';
+    if(z.city==='Mumbai') o.selected=true;
+    gs.appendChild(o);
+  });
+  document.getElementById('gmax-date').value=todayStr();
+}
+function getSel(id){const v=document.getElementById(id).value;const[iana,city]=v.split('||');return{iana,city};}
+function updateLookup(){
+  const src=getSel('src-tz'),ref=getSel('ref-tz');
+  const tv=document.getElementById('src-time').value;if(!tv) return;
+  const[hh,mm]=tv.split(':').map(Number);
+  const utcMin=hh*60+mm-getOffsetMin(src.iana,todayStr());
+  document.getElementById('out-header').textContent=
+    String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')+' in '+src.city+' — all hotspots';
+  const tb=document.getElementById('out-tbody');tb.innerHTML='';
+  ZONES.forEach(z=>{
+    const tMin=utcMin+getOffsetMin(z.iana,todayStr()),timeStr=minToStr(tMin);
+    const dd=Math.floor(tMin/1440);
+    let dn='';
+    if(dd===1) dn='<span class="day-note">+1d</span>';
+    else if(dd===-1) dn='<span class="day-note">−1d</span>';
+    else if(dd!==0) dn='<span class="day-note">'+(dd>0?'+':'')+dd+'d</span>';
+    const isSrc=z.iana===src.iana&&z.city===src.city,isRef=z.iana===ref.iana&&z.city===ref.city,isBoth=isSrc&&isRef;
+    const tr=document.createElement('tr');tr.className=isBoth?'is-both':isSrc?'is-source':isRef?'is-ref':'';
+    const badge=isBoth?'<span class="src-badge">SRC</span><span class="ref-badge">REF</span>':isSrc?'<span class="src-badge">SRC</span>':isRef?'<span class="ref-badge">REF</span>':'';
+    const tcls=isBoth?'both-converted':isRef?'ref-converted':'converted-time';
+    tr.innerHTML=`<td><span class="flag">${z.flag}</span><span class="city-name">${z.city}</span>${badge}</td>
+      <td style="color:var(--muted);font-size:11px">${z.label}</td>
+      <td><span class="${tcls}">${timeStr}</span>${dn}</td>
+      <td><a class="vel-link" href="${z.url}" target="_blank">↗</a></td>`;
+    tb.appendChild(tr);
+  });
+}
+function setPreset(val,btn){
+  document.getElementById('src-time').value=val;
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');updateLookup();
+}
+function onTimeInput(){
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));updateLookup();
+}
+
+function renderGmax(){
+  const refIana=document.getElementById('gmax-ref').value;
+  const eventDate=document.getElementById('gmax-date').value;
+  const nowStr=document.getElementById('gmax-now').value;
+  if(!eventDate||!nowStr) return;
+  const simNow=localToUTC(eventDate,nowStr,refIana);
+  document.getElementById('gmax-sim-display').textContent=fmtHHMM(simNow,refIana);
+  document.getElementById('gmax-sim-date').textContent=fmtDateShort(simNow,refIana);
+  const rows=ZONES.map((z,i)=>{
+    const s=localToUTC(eventDate,'14:00',z.iana);
+    const e=localToUTC(eventDate,'17:00',z.iana);
+    return{z,i,s,e,
+      isActive:simNow>=s&&simNow<e,
+      isUpcoming:simNow<s,
+      isEnded:simNow>=e,
+      prog:simNow>=s&&simNow<e?Math.round(((simNow-s)/(e-s))*100):0,
+      minsUntil:simNow<s?Math.round((s-simNow)/60000):null
+    };
+  });
+  const upSet=new Set([...rows].filter(r=>r.isUpcoming).sort((a,b)=>a.s-b.s).slice(0,5).map(r=>r.i));
+  const tb=document.getElementById('gmax-tbody');tb.innerHTML='';
+  rows.forEach(r=>{
+    const{z,i,s,e,isActive,isUpcoming,isEnded,prog,minsUntil}=r;
+    const isMUp=upSet.has(i);
+    let rc='',sh='';
+    if(isActive){
+      rc='row-active';
+      sh=`<span class="status-badge badge-active">● Active</span>
+        <div style="margin-top:4px;display:flex;align-items:center;gap:4px">
+          <div class="progress-wrap"><div class="progress-bar" style="width:${prog}%"></div></div>
+          <span style="font-size:9px;color:var(--muted)">${prog}%</span>
+        </div>`;
+    } else if(isMUp){
+      rc='row-upcoming';
+      const h=Math.floor(minsUntil/60),m=minsUntil%60;
+      sh=`<span class="status-badge badge-upcoming">Soon</span><div class="countdown">in ${h>0?h+'h ':''
+      }${m}m</div>`;
+    } else if(isEnded){
+      rc='row-ended';
+      sh=`<span class="status-badge badge-ended">Ended</span>`;
+    }
+    const lds=fmtDateShort(s,z.iana),lde=fmtDateShort(e,z.iana);
+    const yds=fmtDateShort(s,refIana),yde=fmtDateShort(e,refIana);
+    const tr=document.createElement('tr');tr.className=rc;
+    tr.innerHTML=`
+      <td><span class="flag">${z.flag}</span><span class="city-name">${z.city}</span>
+        <div class="utc-small">${getUtcLabel(z.iana)}</div>
+        <a class="vel-link" href="${z.url}" target="_blank">↗ Velocity</a></td>
+      <td><div class="time-block">14:00 – 17:00</div>
+        <div class="time-date">${lds===lde?lds:lds+' / '+lde}</div></td>
+      <td><div class="your-time-block">${fmtHHMM(s,refIana)} – ${fmtHHMM(e,refIana)}</div>
+        <div class="time-date">${yds===yde?yds:yds+' / '+yde}</div></td>
+      <td>${sh}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function switchTab(name){
+  // panels
+  document.querySelectorAll('.panel,.panel-with-controls').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  // tab buttons
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='gmax') renderGmax();
+  if(name==='lookup') updateLookup();
+}
+
+// PWA service worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+buildList();buildSelects();updateLookup();tick();renderGmax();
+setInterval(tick,1000);
+</script>
+</body>
+</html>
